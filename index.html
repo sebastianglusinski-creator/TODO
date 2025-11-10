@@ -216,6 +216,11 @@
       contain: layout paint;
     }
     .task-item.completed { opacity: .55; }
+    .task-item.overdue {
+      background: #fef2f2;
+      border: 2px solid #fca5a5;
+      box-shadow: 0 2px 6px rgba(239,68,68,.15);
+    }
     .task-item:active {
       transform: scale(.98);
       box-shadow: 0 2px 8px rgba(0,0,0,.12);
@@ -252,11 +257,35 @@
     }
 
     .task-content { flex: 1; min-width: 0; }
+    
+    .overdue-badge {
+      display: inline-block;
+      background: #dc2626;
+      color: #fff;
+      font-size: 11px;
+      font-weight: 700;
+      padding: 3px 8px;
+      border-radius: 6px;
+      margin-bottom: 4px;
+    }
+    
     .task-title {
       font-size: 15px;
       font-weight: 600;
       word-wrap: break-word;
     }
+    
+    .checklist-counter {
+      display: inline-block;
+      margin-left: 6px;
+      padding: 2px 6px;
+      background: #eff6ff;
+      color: #2563eb;
+      font-size: 11px;
+      font-weight: 700;
+      border-radius: 4px;
+    }
+    
     .task-item.completed .task-title {
       text-decoration: line-through;
       color: var(--muted);
@@ -355,6 +384,22 @@
     .task-menu-btn:active {
       background: #f3f4f6;
       transform: scale(0.9);
+    }
+    
+    .car-suggest-btn {
+      border: none;
+      background: #fff3cd;
+      font-size: 16px;
+      padding: 4px 6px;
+      border-radius: 6px;
+      cursor: pointer;
+      flex-shrink: 0;
+      transition: all 0.12s ease-out;
+      border: 1px solid #fbbf24;
+    }
+    .car-suggest-btn:active {
+      background: #fde68a;
+      transform: scale(0.95);
     }
 
     .task-menu {
@@ -590,6 +635,35 @@
       font-size: 16px;
     }
 
+    /* Smart suggestion badge for "W aucie" */
+    .smart-suggestion {
+      display: none;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 10px;
+      background: #fef3c7;
+      border: 1px solid #fbbf24;
+      border-radius: 8px;
+      font-size: 11px;
+      font-weight: 600;
+      color: #92400e;
+      margin-bottom: 8px;
+      cursor: pointer;
+      transition: all 0.12s ease;
+    }
+    .smart-suggestion:active {
+      transform: scale(0.97);
+      background: #fde68a;
+    }
+    .smart-suggestion.show {
+      display: flex;
+    }
+    .smart-suggestion-icon {
+      font-family: 'Material Symbols Rounded';
+      font-size: 16px;
+      color: #f59e0b;
+    }
+
     .date-options {
       display: flex;
       flex-direction: column;
@@ -696,6 +770,22 @@
       align-items: center;
       transform: none;
       margin-left: 18px;
+    }
+    
+    /* Przeterminowane zadania */
+    .task-item.overdue {
+      background: #fef2f2;
+      border-left: 4px solid #ef4444;
+    }
+    .overdue-badge {
+      display: inline-block;
+      padding: 2px 8px;
+      background: #fee2e2;
+      color: #991b1b;
+      border-radius: 6px;
+      font-size: 11px;
+      font-weight: 700;
+      margin-left: 4px;
     }
     .task-item.upcoming-compact .task-checkbox {
       width: 18px;
@@ -877,24 +967,46 @@
       border: 1px solid #60a5fa;
     }
 
-    /* Sekcja Dziś wieczorem w widoku Dzisiaj */
-    /* UPDATE v3.3b: Spójny wygląd z kartami zadań (białe tło, cień) */
-    .today-evening-block {
-      margin-top: 16px;
-      padding: 12px;
-      background: #ffffff;
-      border-radius: 12px;
-      box-shadow: 0 1px 3px rgba(0,0,0,.08);
+    /* Widok "Dzisiaj" - nowy profesjonalny layout */
+    .today-header-content {
+      flex: 1;
     }
-    .today-evening-header {
+    
+    .today-date-display {
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--ink);
+      margin-bottom: 12px;
+      text-align: center;
+    }
+    
+    .today-section-header {
       display: flex;
       align-items: center;
-      justify-content: space-between;
-      gap: 6px;
-      font-size: 14px;
+      gap: 8px;
+      padding: 8px 0;
+      margin-bottom: 8px;
+    }
+    
+    .today-section-header.evening {
+      margin-top: 32px;
+      padding-top: 20px;
+      border-top: 1px solid #e5e7eb;
+    }
+    
+    .today-section-icon {
+      font-family: 'Material Symbols Rounded';
+      font-size: 24px;
+    }
+    
+    .today-section-label {
+      font-size: 18px;
       font-weight: 700;
-      color: #374151;
-      margin-bottom: 6px;
+      color: var(--ink);
+    }
+    
+    .today-evening-section {
+      /* Sekcja wieczorna */
     }
   
     /* UPDATE v3.3b: wiersz tytułu zadania + strzałka rozwijania */
@@ -968,6 +1080,17 @@
       </div>
     </div>
 
+    <div class="category-card" onclick="openView('incar')">
+      <div class="category-left">
+        <span class="category-icon" style="color:#f97316">directions_car</span>
+        <span class="category-name">W aucie</span>
+      </div>
+      <div class="category-right">
+        <span class="category-count" id="count-incar">0</span>
+        <span class="category-arrow">chevron_right</span>
+      </div>
+    </div>
+
     <div class="category-card" onclick="openView('thisweek')">
       <div class="category-left">
         <span class="category-icon" style="color:#8b5cf6">date_range</span>
@@ -1026,16 +1149,20 @@
 <div class="screen" id="todayScreen">
   <div class="view-header">
     <button class="back-btn" onclick="goHome()">arrow_back</button>
-    <div>
-      <div class="view-title"><span class="view-icon" style="color:#f59e0b">star</span> Dzisiaj</div>
-      <div class="view-subtitle" id="today-date"></div>
+    <div class="today-header-content">
+      <div class="today-date-display" id="today-full-date"></div>
+      <div class="today-section-header">
+        <span class="today-section-icon" style="color:#f59e0b">star</span>
+        <span class="today-section-label">Dzisiaj</span>
+      </div>
     </div>
   </div>
   <div id="tasks-today-main"></div>
-  <div class="today-evening-block" id="today-evening-block">
-    <div class="today-evening-header">
-      <span class="material-symbols-rounded">nightlight</span>
-      <span>Dziś wieczorem</span>
+  
+  <div class="today-evening-section">
+    <div class="today-section-header evening">
+      <span class="today-section-icon" style="color:#6366f1">nightlight</span>
+      <span class="today-section-label">Dziś wieczorem</span>
     </div>
     <div id="tasks-today-evening"></div>
   </div>
@@ -1051,6 +1178,18 @@
     </div>
   </div>
   <div id="tasks-evening"></div>
+</div>
+
+<!-- W AUCIE -->
+<div class="screen" id="incarScreen">
+  <div class="view-header">
+    <button class="back-btn" onclick="goHome()">arrow_back</button>
+    <div>
+      <div class="view-title"><span class="view-icon" style="color:#f97316">directions_car</span> W aucie</div>
+      <div class="view-subtitle">Telefony i kontakty</div>
+    </div>
+  </div>
+  <div id="tasks-incar"></div>
 </div>
 
 <!-- TEN TYDZIEŃ -->
@@ -1129,6 +1268,13 @@
 
         <div class="form-group">
           <div class="form-label">Kiedy?</div>
+          
+          <!-- Smart suggestion for "W aucie" -->
+          <div class="smart-suggestion" id="smartSuggestion" onclick="acceptSmartSuggestion()">
+            <span class="smart-suggestion-icon">lightbulb</span>
+            <span>Zadanie w aucie?</span>
+          </div>
+          
           <div class="date-options">
             <div class="date-option" data-type="DZISIAJ" onclick="selectDate(event,'DZISIAJ')">
               <span class="date-option-icon" style="color:#f59e0b">star</span>
@@ -1142,6 +1288,13 @@
               <div>
                 <div class="date-option-title">Dziś wieczorem</div>
                 <div class="date-option-sub">Po 18:00</div>
+              </div>
+            </div>
+            <div class="date-option" data-type="W_AUCIE" onclick="selectDate(event,'W_AUCIE')">
+              <span class="date-option-icon" style="color:#f97316">directions_car</span>
+              <div>
+                <div class="date-option-title">W aucie</div>
+                <div class="date-option-sub">Telefony i kontakty</div>
               </div>
             </div>
             <div class="date-option selected" data-type="KIEDYKOLWIEK" onclick="selectDate(event,'KIEDYKOLWIEK')">
@@ -1334,6 +1487,7 @@
         return real === today;
       }).length,
       evening: allTasks.filter(t => t.status === 'DO_ZROBIENIA' && t.date === 'WIECZOREM').length,
+      incar: allTasks.filter(t => t.status === 'DO_ZROBIENIA' && t.date === 'W_AUCIE').length,
       thisweek: allTasks.filter(t => {
         if (t.status !== 'DO_ZROBIENIA') return false;
         if (!t.date || t.date === 'KIEDYKOLWIEK') return false;
@@ -1461,6 +1615,9 @@
       case 'evening':
         list = allTasks.filter(t => t.status === 'DO_ZROBIENIA' && t.date === 'WIECZOREM');
         break;
+      case 'incar':
+        list = allTasks.filter(t => t.status === 'DO_ZROBIENIA' && t.date === 'W_AUCIE');
+        break;
       case 'anytime':
         list = allTasks.filter(t => t.status === 'DO_ZROBIENIA' && t.date === 'KIEDYKOLWIEK');
         break;
@@ -1501,6 +1658,15 @@
     const mainC = $('tasks-today-main');
     const eveC = $('tasks-today-evening');
 
+    // Przeterminowane zadania (data < dzisiaj)
+    const overdueTasks = allTasks.filter(t => {
+      if (t.status !== 'DO_ZROBIENIA') return false;
+      if (!t.date) return false;
+      if (t.date === 'DZISIAJ' || t.date === 'WIECZOREM' || t.date === 'W_AUCIE' || t.date === 'KIEDYKOLWIEK') return false;
+      return t.date < today;
+    });
+
+    // Zadania na dzisiaj
     const todayTasks = allTasks.filter(t => {
       if (t.status !== 'DO_ZROBIENIA') return false;
       if (!t.date) return false;
@@ -1513,9 +1679,23 @@
       return t.date === 'WIECZOREM';
     });
 
-    mainC.innerHTML = todayTasks.length
-      ? todayTasks.map(t => renderTask(t, false, false)).join('')
-      : emptyHtml();
+    let html = '';
+    
+    // Najpierw przeterminowane (na górze)
+    if (overdueTasks.length) {
+      overdueTasks.forEach(t => {
+        html += renderTask(t, false, false, true);
+      });
+    }
+    
+    // Potem normalne zadania na dzisiaj
+    if (todayTasks.length) {
+      todayTasks.forEach(t => {
+        html += renderTask(t, false, false);
+      });
+    }
+    
+    mainC.innerHTML = html || emptyHtml();
 
     eveC.innerHTML = eveningTasks.length
       ? eveningTasks.map(t => renderTask(t, false, false)).join('')
@@ -1656,10 +1836,19 @@
     );
   }
 
-  function renderTask(task, inUpcoming=false, inHistory=false) {
+  function renderTask(task, inUpcoming=false, inHistory=false, isOverdue=false) {
     const isCompleted = task.status === 'WYKONANE';
     const isPersonal = task.type === 'OSOBISTE';
     const isGroup = task.taskType === 'GRUPOWE';
+    
+    // Obliczamy ile dni przeterminowane
+    let overdueInfo = '';
+    if (isOverdue && !isCompleted) {
+      const today = new Date(todayISO());
+      const taskDate = new Date(task.date);
+      const diffDays = Math.floor((today - taskDate) / (1000 * 60 * 60 * 24));
+      overdueInfo = `<span class="overdue-badge">⚠️ Przeterminowane o ${diffDays} ${diffDays === 1 ? 'dzień' : diffDays < 5 ? 'dni' : 'dni'}</span>`;
+    }
 
     let historyInfo = '';
     if (inHistory) {
@@ -1678,6 +1867,12 @@
       const menuBtn = isPersonal
         ? '<button class="task-menu-btn" onclick="openTaskMenu(event,\'' + task.id + '\')">more_vert</button>'
         : '';
+      
+      // Ikonka "W aucie" jeśli zadanie zawiera słowa kluczowe
+      const carIcon = (taskHasCarKeyword(task) && task.date !== 'W_AUCIE')
+        ? '<button class="car-suggest-btn" onclick="event.stopPropagation();moveToInCar(\'' + task.id + '\')" title="Przenieś do: W aucie">🚗</button>'
+        : '';
+      
       return '' +
         '<div class="task-item upcoming-compact ' + (isCompleted ? 'completed' : '') + '" data-id="' + task.id + '" ' + draggable + '>' +
           '<div class="' + checkboxClass + '"' +
@@ -1687,6 +1882,7 @@
           '<div class="task-content" onclick="onTaskClick(\'' + task.id + '\')">' +
             '<div class="task-title">' + (task.title || '') + '</div>' +
           '</div>' +
+          carIcon +
           menuBtn +
         '</div>';
     }
@@ -1704,9 +1900,21 @@
 
     // UPDATE v3.3b: Strzałka do rozwijania notatek/checklisty z animacją.
     const hasDetails = !!(historyInfo || notesHtml);
+    
+    // Licznik checklisty
+    let checklistCounter = '';
+    if (looksLikeChecklist(task.notes)) {
+      const lines = task.notes.split('\n').map(l => l.trim()).filter(l => l);
+      const checklistLines = lines.filter(l => /^-\s*\[( |x|X)\]\s+.+/.test(l));
+      const doneCount = checklistLines.filter(l => /^-\s*\[x|X\]/.test(l)).length;
+      const totalCount = checklistLines.length;
+      if (totalCount > 0) {
+        checklistCounter = '<span class="checklist-counter">' + doneCount + '/' + totalCount + '</span>';
+      }
+    }
 
     let titleRowHtml = '<div class="task-title-row">' +
-      '<div class="task-title">' + (task.title || '') + '</div>';
+      '<div class="task-title">' + (task.title || '') + checklistCounter + '</div>';
 
     if (hasDetails) {
       titleRowHtml += '<span class="expand-arrow" onclick="toggleSubtasks(event, \''
@@ -1729,12 +1937,13 @@
     }
 
     return '' +
-      '<div class="task-item ' + (isCompleted ? 'completed' : '') + '" data-id="' + task.id + '">' +
+      '<div class="task-item ' + (isCompleted ? 'completed' : '') + (isOverdue ? ' overdue' : '') + '" data-id="' + task.id + '">' +
         '<div class="task-checkbox ' + (isCompleted ? 'checked' : '') + '"' +
           ' onclick="event.stopPropagation();toggleTask(\'' + task.id + '\')">' +
           '<span class="icon">check</span>' +
         '</div>' +
         '<div class="task-content" onclick="onTaskClick(\'' + task.id + '\')">' +
+          (overdueInfo ? overdueInfo : '') +
           titleRowHtml +
           (tags ? '<div class="task-meta">' + tags + '</div>' : '') +
           detailsHtml +
@@ -1782,7 +1991,17 @@
   function onTaskClick(id) {
     const t = allTasks.find(x => x.id === id);
     if (!t) return;
-    if (t.type === 'OSOBISTE') openEditTask(id);
+    
+    // Pojedyncze kliknięcie rozwija subzadania
+    const item = document.querySelector('.task-item[data-id="' + id + '"]');
+    if (!item) return;
+    
+    const details = item.querySelector('.task-details');
+    if (details) {
+      // Ma subzadania - rozwiń/zwiń
+      toggleSubtasks(null, id);
+    }
+    // Edycja tylko przez menu (3 kropki)
   }
 
   /* Checkbox animacja + logika */
@@ -2000,7 +2219,10 @@
     resetChecklistEditor();
     setDateOption('KIEDYKOLWIEK', null);
     $('addSheet').classList.add('active');
-    setTimeout(() => $('taskTitle').focus(), 60);
+    setTimeout(() => {
+      $('taskTitle').focus();
+      setupSmartDetection();
+    }, 60);
   }
 
   function openEditTask(id) {
@@ -2183,6 +2405,78 @@
       .join('\n');
   }
 
+  /* SMART DETECTION FOR "W AUCIE" */
+  
+  // Słowa kluczowe wykrywające zadania "W aucie"
+  // Łatwo dodać nowe słowa tutaj:
+  const CAR_KEYWORDS = [
+    // Telefon
+    'telefon', 'tel',
+    'zadzwonić', 'zadzwonic', 'zadzwon',
+    'oddzwonić', 'oddzwonic', 'oddzwon',
+    'zatelefenować', 'zatelefenowac',
+    'dzwonić', 'dzwonic', 'dzwon',
+    // Kontakt
+    'skontaktować', 'skontaktowac', 'skontaktuj',
+    'kontakt', 'kontak', 'kontaktować', 'kontaktowac',
+    // Wiadomości
+    'napisać', 'napisac', 'napisz',
+    'email', 'mail', 'e-mail',
+    'sms', 'wiadomość', 'wiadomosc',
+    // Spotkania
+    'umówić', 'umowic', 'umów', 'umow',
+    'spotkanie', 'spotkać', 'spotkac',
+    'wizyta', 'rozmowa',
+    // Inne
+    'pogadać', 'pogadac'
+  ];
+  
+  function taskHasCarKeyword(task) {
+    const text = (task.title || '').toLowerCase();
+    return CAR_KEYWORDS.some(kw => text.includes(kw));
+  }
+  
+  function setupSmartDetection() {
+    const titleInput = $('taskTitle');
+    const badge = $('smartSuggestion');
+    
+    const checkKeywords = () => {
+      const text = titleInput.value.toLowerCase();
+      const hasKeyword = CAR_KEYWORDS.some(kw => text.includes(kw));
+      
+      // Automatycznie przełącz na "W aucie" jeśli wykryto słowo kluczowe
+      if (hasKeyword && selectedDateOption !== 'W_AUCIE') {
+        setDateOption('W_AUCIE', null);
+        // Ukryj badge po automatycznym ustawieniu
+        badge.classList.remove('show');
+      }
+    };
+    
+    titleInput.removeEventListener('input', checkKeywords);
+    titleInput.addEventListener('input', checkKeywords);
+    checkKeywords();
+  }
+  
+  function acceptSmartSuggestion() {
+    setDateOption('W_AUCIE', null);
+    $('smartSuggestion').classList.remove('show');
+    toast('📱 Ustawiono: W aucie');
+  }
+  
+  function moveToInCar(id) {
+    const t = allTasks.find(x => x.id === id);
+    if (!t || t.type !== 'OSOBISTE') return;
+    
+    t.date = 'W_AUCIE';
+    saveTasks();
+    updateCounts();
+    
+    if ($('upcomingScreen').classList.contains('active')) renderUpcoming();
+    if ($('thisweekScreen').classList.contains('active')) renderThisWeek();
+    
+    toast('🚗 Przeniesiono do: W aucie');
+  }
+
   function saveTask(e) {
     e.preventDefault();
     const title = $('taskTitle').value.trim();
@@ -2306,7 +2600,9 @@
     $('homeDate').textContent = now.toLocaleDateString('pl-PL', {
       day:'numeric', month:'long', year:'numeric'
     });
-    $('today-date').textContent = formatFullDate(now);
+    $('today-full-date').textContent = now.toLocaleDateString('pl-PL', {
+      day:'numeric', month:'long', year:'numeric'
+    });
     $('today-label').textContent = formatFullDate(now);
 
     const endOfWeek = (() => {
