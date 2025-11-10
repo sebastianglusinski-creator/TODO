@@ -1,0 +1,2352 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+  <meta charset="UTF-8" />
+  <title>Zadania - PDA DEDRA v10.3</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1, user-scalable=no" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded" rel="stylesheet" />
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --blue: #2563eb;
+      --ink: #111827;
+      --muted: #6b7280;
+      --bg: #ffffff;
+      --danger: #ef4444;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
+      background: var(--bg);
+      color: var(--ink);
+      -webkit-user-select: none;
+      user-select: none;
+      touch-action: manipulation;
+      overflow: hidden;
+      height: 100vh;
+    }
+
+    .material-symbols-rounded {
+      font-variation-settings:
+      'FILL' 0,
+      'wght' 400,
+      'GRAD' 0,
+      'opsz' 24;
+    }
+
+    /* Ekrany */
+
+    .screen {
+      position: absolute;
+      inset: 0;
+      padding: 20px 16px 24px;
+      background: var(--bg);
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+      transform: translateX(100%);
+      opacity: 0;
+      pointer-events: none;
+      transition: transform 0.18s ease-out, opacity 0.18s ease-out;
+      will-change: transform, opacity;
+    }
+
+    #homeScreen {
+      transform: translateX(0);
+      opacity: 1;
+      pointer-events: auto;
+      z-index: 1;
+    }
+
+    .screen.active { z-index: 2; }
+
+    /* HOME */
+
+    .home-header {
+      margin-bottom: 24px;
+      text-align: center;
+    }
+    .home-date-day {
+      font-size: 20px;
+      font-weight: 700;
+    }
+    .home-date-full {
+      font-size: 15px;
+      color: var(--muted);
+    }
+
+    .category-list {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    .category-card {
+      background: #fff;
+      border-radius: 12px;
+      padding: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      cursor: pointer;
+      box-shadow: 0 1px 3px rgba(0,0,0,.08);
+      transition: transform 0.12s ease-out, box-shadow 0.12s ease-out;
+      will-change: transform, box-shadow;
+    }
+    .category-card:active {
+      transform: scale(0.97);
+      box-shadow: 0 3px 12px rgba(0,0,0,.14);
+    }
+
+    .category-left {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .category-icon {
+      font-family: 'Material Symbols Rounded';
+      font-size: 26px;
+      width: 32px;
+      text-align: center;
+    }
+    .category-name {
+      font-size: 17px;
+      font-weight: 600;
+    }
+    .category-right {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .category-count {
+      min-width: 24px;
+      padding: 0 6px;
+      height: 24px;
+      border-radius: 999px;
+      background: var(--blue);
+      color: #fff;
+      font-size: 13px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: .3;
+      transition: opacity 0.15s ease-out;
+    }
+    .category-arrow {
+      font-family: 'Material Symbols Rounded';
+      font-size: 20px;
+      color: var(--muted);
+    }
+
+    /* Nagłówki widoków */
+
+    .view-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 14px;
+    }
+
+    .view-header.sticky {
+      position: sticky;
+      top: 0;
+      padding-top: 4px;
+      padding-bottom: 8px;
+      background: #ffffff; /* UPDATE v3.3b: pełne białe tło pod nagłówkiem */
+      z-index: 40; /* nad zadaniami, bez przebijania tła */
+      box-shadow: 0 4px 14px rgba(15,23,42,.06);
+    }
+
+    .back-btn {
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      border: none;
+      background: #f3f4f6;
+      font-family: 'Material Symbols Rounded';
+      font-size: 20px;
+      color: var(--muted);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      flex-shrink: 0;
+      transition: background-color 0.12s ease-out, transform 0.08s ease-out;
+    }
+    .back-btn:active {
+      background: #e5e7eb;
+      transform: scale(0.94);
+    }
+
+    .view-icon {
+      font-family: 'Material Symbols Rounded';
+      font-size: 26px;
+      margin-right: 2px;
+    }
+
+    .view-title {
+      font-size: 26px;
+      font-weight: 900;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .view-subtitle {
+      font-size: 13px;
+      color: var(--muted);
+      margin-top: 1px;
+    }
+
+    /* Zadania */
+
+    .task-item {
+      background: #fff;
+      border-radius: 12px;
+      padding: 14px 12px;
+      margin-bottom: 8px;
+      box-shadow: 0 1px 3px rgba(0,0,0,.08);
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      position: relative;
+      cursor: pointer;
+      transition: transform 0.08s ease-out, box-shadow 0.08s ease-out, opacity 0.12s ease-out;
+      will-change: transform, opacity, box-shadow;
+      contain: layout paint;
+    }
+    .task-item.completed { opacity: .55; }
+    .task-item:active {
+      transform: scale(.98);
+      box-shadow: 0 2px 8px rgba(0,0,0,.12);
+    }
+
+    .task-checkbox {
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      border: 2px solid #d1d5db;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      margin-top: 2px;
+      background: #fff;
+      font-size: 14px;
+      transition: background-color 0.12s ease-out, border-color 0.12s ease-out, transform 0.10s ease-out;
+      will-change: transform, background-color, border-color;
+    }
+    .task-checkbox .icon {
+      font-family: 'Material Symbols Rounded';
+      font-size: 14px;
+      display: none;
+    }
+    .task-checkbox.checked {
+      background: var(--blue);
+      border-color: var(--blue);
+      color: #fff;
+    }
+    .task-checkbox.checked .icon { display: block; }
+    .task-checkbox.pop {
+      transform: scale(1.18);
+    }
+
+    .task-content { flex: 1; min-width: 0; }
+    .task-title {
+      font-size: 15px;
+      font-weight: 600;
+      word-wrap: break-word;
+    }
+    .task-item.completed .task-title {
+      text-decoration: line-through;
+      color: var(--muted);
+    }
+
+    .task-meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-top: 4px;
+    }
+    .task-tag {
+      font-size: 10px;
+      padding: 2px 6px;
+      border-radius: 6px;
+      font-weight: 600;
+    }
+    .task-tag.type { background: #dbeafe; color: #1d4ed8; }
+
+    .task-notes {
+      font-size: 12px;
+      color: var(--muted);
+      margin-top: 4px;
+      line-height: 1.4;
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 80px 16px;
+      color: var(--muted);
+      font-size: 14px;
+    }
+    .empty-icon {
+      font-family: 'Material Symbols Rounded';
+      font-size: 52px;
+      opacity: .18;
+      margin-bottom: 10px;
+    }
+
+    /* Checklist view */
+
+    .checklist-view {
+      list-style: none;
+      margin-top: 4px;
+    }
+    .checklist-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 12px;
+      color: var(--muted);
+      margin-bottom: 2px;
+    }
+    .checklist-checkbox {
+      /* UPDATE v3.3b: większy przycisk checklisty dla wygodniejszego kliku */
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      border: 1.5px solid #d1d5db;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 13px;
+      flex-shrink: 0;
+    }
+    .checklist-checkbox span {
+      font-family: 'Material Symbols Rounded';
+      display: none;
+      font-size: 15px;
+    }
+    .checklist-checkbox.checked {
+      background: var(--blue);
+      border-color: var(--blue);
+      color: #fff;
+    }
+    .checklist-checkbox.checked span { display: block; }
+    .checklist-item.done .checklist-text {
+      text-decoration: line-through;
+      color: #9ca3af;
+    }
+
+    /* Menu ⋮ */
+
+    .task-menu-btn {
+      border: none;
+      background: transparent;
+      font-family: 'Material Symbols Rounded';
+      font-size: 18px;
+      color: var(--muted);
+      padding: 2px;
+      border-radius: 8px;
+      cursor: pointer;
+      flex-shrink: 0;
+      transition: background-color 0.12s ease-out, transform 0.08s ease-out;
+    }
+    .task-menu-btn:active {
+      background: #f3f4f6;
+      transform: scale(0.9);
+    }
+
+    .task-menu {
+      position: fixed;
+      min-width: 140px;
+      background: #ffffff;
+      box-shadow: 0 6px 18px rgba(15,23,42,.18);
+      border-radius: 12px;
+      padding: 6px 0;
+      z-index: 1000;
+      display: none;
+    }
+    .task-menu-item {
+      width: 100%;
+      padding: 8px 14px;
+      border: none;
+      background: transparent;
+      text-align: left;
+      font-size: 14px;
+      color: var(--ink);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .task-menu-item span.icon {
+      font-family: 'Material Symbols Rounded';
+      font-size: 18px;
+    }
+    .task-menu-item:hover { background: #f3f4f6; }
+    .task-menu-delete { color: var(--danger); }
+
+    /* FAB */
+
+    .fab {
+      position: fixed;
+      right: 20px;
+      bottom: 20px;
+      width: 56px;
+      height: 56px;
+      border-radius: 50%;
+      border: none;
+      background: var(--blue);
+      color: #fff;
+      font-family: 'Material Symbols Rounded';
+      font-size: 28px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 4px 14px rgba(37,99,235,.35);
+      cursor: pointer;
+      z-index: 900;
+      transition: transform 0.12s ease-out, box-shadow 0.12s ease-out;
+      will-change: transform, box-shadow;
+    }
+    .fab:active {
+      transform: scale(0.94);
+      box-shadow: 0 2px 8px rgba(37,99,235,.25);
+    }
+
+    /* Sheet dodaj/edytuj */
+
+    .sheet-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,.45);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 800;
+      padding: 18px;
+    }
+    .sheet-overlay.active { display: flex; }
+
+    .sheet-content {
+      background: #fff;
+      border-radius: 16px;
+      max-width: 480px;
+      width: 100%;
+      max-height: 85vh;
+      overflow-y: auto;
+    }
+    .sheet-header {
+      padding: 16px 14px 10px;
+      border-bottom: 1px solid #f3f4f6;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+    }
+    .sheet-title { font-size: 18px; font-weight: 800; }
+    .sheet-close-btn {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      border: none;
+      background: #f3f4f6;
+      font-family: 'Material Symbols Rounded';
+      font-size: 18px;
+      color: var(--muted);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+    }
+    .sheet-body { padding: 16px 14px 22px; }
+
+    .form-group { margin-bottom: 16px; }
+
+    .form-input,
+    .form-textarea {
+      width: 100%;
+      padding: 10px 12px;
+      border-radius: 10px;
+      border: none;
+      background: #f9fafb;
+      font-size: 14px;
+      outline: none;
+    }
+    .form-textarea {
+      resize: vertical;
+      min-height: 70px;
+      font-family: inherit;
+    }
+    .form-input:focus,
+    .form-textarea:focus {
+      background: #f3f4f6;
+    }
+
+    .form-label-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 6px;
+    }
+    .form-label {
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: .04em;
+    }
+    .checklist-toggle-btn {
+      border: none;
+      background: transparent;
+      padding: 2px 4px;
+      border-radius: 6px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 10px;
+      color: var(--muted);
+    }
+    .checklist-toggle-btn span {
+      font-family: 'Material Symbols Rounded';
+      font-size: 16px;
+    }
+    .checklist-toggle-btn.active {
+      color: var(--blue);
+      background: #eff6ff;
+    }
+
+    .checklist-editor {
+      display: none;
+      margin-top: 2px;
+    }
+    .checklist-editor.active { display: block; }
+    .checklist-row {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin-bottom: 4px;
+    }
+    .checklist-row-toggle {
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      border: 1.6px solid #d1d5db;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      flex-shrink: 0;
+    }
+    .checklist-row-toggle span {
+      font-family: 'Material Symbols Rounded';
+      display: none;
+      font-size: 15px;
+    }
+    .checklist-row-toggle.checked {
+      background: var(--blue);
+      border-color: var(--blue);
+      color: #fff;
+    }
+    .checklist-row-toggle.checked span { display: block; }
+    .checklist-row-input {
+      flex: 1;
+      border: none;
+      border-radius: 6px;
+      padding: 4px 6px;
+      font-size: 13px;
+      background: #f9fafb;
+      outline: none;
+    }
+    .checklist-row-remove {
+      border: none;
+      background: transparent;
+      font-family: 'Material Symbols Rounded';
+      font-size: 15px;
+      color: #9ca3af;
+      cursor: pointer;
+      padding: 2px;
+      border-radius: 6px;
+      flex-shrink: 0;
+    }
+    .checklist-row-remove:active {
+      background: #f3f4f6;
+    }
+    .checklist-add-btn {
+      border: none;
+      background: transparent;
+      color: var(--blue);
+      font-size: 12px;
+      padding: 2px 0;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .checklist-add-btn span {
+      font-family: 'Material Symbols Rounded';
+      font-size: 16px;
+    }
+
+    .date-options {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .date-option {
+      padding: 10px;
+      border-radius: 10px;
+      background: #f9fafb;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      cursor: pointer;
+      transition: background-color 0.12s ease-out, box-shadow 0.12s ease-out;
+    }
+    .date-option.selected {
+      background: #eff6ff;
+      box-shadow: 0 0 0 2px var(--blue);
+    }
+    .date-option-icon {
+      font-family: 'Material Symbols Rounded';
+      font-size: 22px;
+    }
+    .date-option-title { font-size: 14px; font-weight: 700; }
+    .date-option-sub { font-size: 11px; color: var(--muted); }
+
+    .btn {
+      width: 100%;
+      padding: 12px;
+      border-radius: 12px;
+      border: none;
+      background: var(--blue);
+      color: #fff;
+      font-weight: 800;
+      font-size: 15px;
+      cursor: pointer;
+      margin-top: 4px;
+    }
+
+    /* Toast */
+
+    #toast {
+      position: fixed;
+      top: 18px;
+      left: 50%;
+      transform: translateX(-50%) translateY(-80px);
+      background: #111827;
+      color: #fff;
+      padding: 10px 16px;
+      border-radius: 10px;
+      box-shadow: 0 4px 14px rgba(0,0,0,.3);
+      font-size: 13px;
+      font-weight: 600;
+      opacity: 0;
+      z-index: 1200;
+      transition: transform 0.18s ease-out, opacity 0.18s ease-out;
+      pointer-events: none;
+      will-change: transform, opacity;
+    }
+    #toast.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+
+    /* Date groups */
+
+    .date-group {
+      padding: 10px 0 8px 6px;
+      border-bottom: 1px solid #e5e7eb;
+      margin-bottom: 2px;
+      transition: background-color 0.12s ease-out;
+    }
+    .date-group.today {
+      background: #f9fafb;
+    }
+    .date-header {
+      display: flex;
+      align-items: baseline;
+      gap: 8px;
+      margin-bottom: 4px;
+    }
+    .date-number {
+      font-size: 24px;
+      font-weight: 900;
+      color: var(--ink);
+      line-height: 1;
+    }
+    .date-label {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--muted);
+    }
+    .date-group.drop-target {
+      background: #f3f4f6 !important;
+    }
+
+    /* Kompakt Nadchodzące / Ten tydzień */
+
+    .task-item.upcoming-compact {
+      box-shadow: none;
+      border-radius: 0;
+      padding: 5px 0;
+      margin-bottom: 3px;
+      align-items: center;
+      transform: none;
+      margin-left: 18px;
+    }
+    .task-item.upcoming-compact .task-checkbox {
+      width: 18px;
+      height: 18px;
+      margin-top: 0;
+    }
+    .task-item.upcoming-compact .task-title {
+      font-size: 13px;
+      font-weight: 500;
+    }
+    .task-item.upcoming-compact .task-notes,
+    .task-item.upcoming-compact .task-meta {
+      display: none;
+    }
+
+    .month-header {
+      margin-top: 18px;
+      padding-top: 8px;
+      border-top: 1px solid #e5e7eb;
+      font-size: 18px;
+      font-weight: 800;
+      color: var(--ink);
+    }
+
+    .upcoming-compact-date {
+      display: inline-block;
+      min-width: 42px;
+      font-weight: 600;
+      color: var(--muted);
+      font-size: 12px;
+      margin-right: 4px;
+    }
+
+    /* Delete modal */
+
+    #deleteModal {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,.45);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 1100;
+      padding: 18px;
+    }
+    #deleteModal.active { display: flex; }
+    .delete-box {
+      background: #fff;
+      border-radius: 14px;
+      padding: 16px 16px 12px;
+      width: 100%;
+      max-width: 320px;
+      box-shadow: 0 10px 30px rgba(15,23,42,.35);
+      transform: scale(0.96);
+      opacity: 0;
+      transition: transform 0.18s ease-out, opacity 0.18s ease-out;
+    }
+    #deleteModal.active .delete-box {
+      transform: scale(1);
+      opacity: 1;
+    }
+    .delete-title {
+      font-size: 16px;
+      font-weight: 700;
+      margin-bottom: 6px;
+    }
+    .delete-text {
+      font-size: 13px;
+      color: var(--muted);
+      margin-bottom: 12px;
+    }
+    .delete-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 8px;
+    }
+    .btn-outline {
+      padding: 8px 14px;
+      border-radius: 999px;
+      border: 1px solid #e5e7eb;
+      background: #fff;
+      font-size: 13px;
+      color: var(--muted);
+      cursor: pointer;
+    }
+    .btn-danger {
+      padding: 8px 14px;
+      border-radius: 999px;
+      border: none;
+      background: var(--blue);
+      color: #fff;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .btn-danger span {
+      font-family: 'Material Symbols Rounded';
+      font-size: 18px;
+    }
+
+    /* Kalendarz popup */
+
+    .calendar-popup {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,.5);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 900;
+      padding: 18px;
+    }
+    .calendar-popup.active { display: flex; }
+    .calendar-content {
+      background: #111827;
+      border-radius: 16px;
+      padding: 16px;
+      width: 100%;
+      max-width: 340px;
+      color: #f9fafb;
+    }
+    .calendar-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 10px;
+    }
+    .calendar-month-label {
+      font-size: 14px;
+      font-weight: 600;
+    }
+    .calendar-nav {
+      width: 28px;
+      height: 28px;
+      border-radius: 8px;
+      border: none;
+      background: #374151;
+      color: #e5e7eb;
+      font-family: 'Material Symbols Rounded';
+      font-size: 18px;
+      cursor: pointer;
+    }
+    .calendar-grid {
+      display: grid;
+      grid-template-columns: repeat(7,1fr);
+      gap: 4px;
+      margin-top: 6px;
+    }
+    .calendar-day-header {
+      font-size: 9px;
+      text-align: center;
+      color: #9ca3af;
+    }
+    .calendar-day {
+      aspect-ratio: 1;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      cursor: pointer;
+      color: #e5e7eb;
+      transition: background-color 0.12s ease-out;
+    }
+    .calendar-day:hover { background: #374151; }
+    .calendar-day.disabled {
+      color: #4b5563;
+      cursor: default;
+    }
+    .calendar-day.disabled:hover { background: transparent; }
+    .calendar-day.selected {
+      background: var(--blue);
+      color: #fff;
+    }
+    .calendar-day.today {
+      border: 1px solid #60a5fa;
+    }
+
+    /* Sekcja Dziś wieczorem w widoku Dzisiaj */
+    /* UPDATE v3.3b: Spójny wygląd z kartami zadań (białe tło, cień) */
+    .today-evening-block {
+      margin-top: 16px;
+      padding: 12px;
+      background: #ffffff;
+      border-radius: 12px;
+      box-shadow: 0 1px 3px rgba(0,0,0,.08);
+    }
+    .today-evening-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 6px;
+      font-size: 14px;
+      font-weight: 700;
+      color: #374151;
+      margin-bottom: 6px;
+    }
+  
+    /* UPDATE v3.3b: wiersz tytułu zadania + strzałka rozwijania */
+    .task-title-row {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .task-title-row .task-title {
+      flex: 1;
+    }
+    .expand-arrow {
+      font-family: 'Material Symbols Rounded';
+      font-size: 18px;
+      color: #9ca3af;
+      cursor: pointer;
+      transition: transform 0.18s ease, color 0.18s ease;
+      flex-shrink: 0;
+    }
+
+    /* UPDATE v3.3b: animowane rozwijanie szczegółów (checklisty / notatek) */
+    .task-details {
+      overflow: hidden;
+      max-height: 0;
+      opacity: 0;
+      transition: max-height 0.28s ease, opacity 0.24s ease;
+    }
+
+  </style>
+</head>
+<body>
+
+<!-- HOME -->
+<div class="screen" id="homeScreen">
+  <div class="home-header">
+    <div class="home-date-day" id="homeDay"></div>
+    <div class="home-date-full" id="homeDate"></div>
+  </div>
+
+  <div class="category-list">
+    <div class="category-card" onclick="openView('assigned')">
+      <div class="category-left">
+        <span class="category-icon" style="color:#10b981">assignment</span>
+        <span class="category-name">Zadania</span>
+      </div>
+      <div class="category-right">
+        <span class="category-count" id="count-assigned">0</span>
+        <span class="category-arrow">chevron_right</span>
+      </div>
+    </div>
+
+    <div class="category-card" onclick="openView('today')">
+      <div class="category-left">
+        <span class="category-icon" style="color:#f59e0b">star</span>
+        <span class="category-name">Dzisiaj</span>
+      </div>
+      <div class="category-right">
+        <span class="category-count" id="count-today">0</span>
+        <span class="category-arrow">chevron_right</span>
+      </div>
+    </div>
+
+    <div class="category-card" onclick="openView('evening')">
+      <div class="category-left">
+        <span class="category-icon" style="color:#6366f1">nightlight</span>
+        <span class="category-name">Dziś wieczorem</span>
+      </div>
+      <div class="category-right">
+        <span class="category-count" id="count-evening">0</span>
+        <span class="category-arrow">chevron_right</span>
+      </div>
+    </div>
+
+    <div class="category-card" onclick="openView('thisweek')">
+      <div class="category-left">
+        <span class="category-icon" style="color:#8b5cf6">date_range</span>
+        <span class="category-name">Ten tydzień</span>
+      </div>
+      <div class="category-right">
+        <span class="category-count" id="count-thisweek">0</span>
+        <span class="category-arrow">chevron_right</span>
+      </div>
+    </div>
+
+    <div class="category-card" onclick="openView('upcoming')">
+      <div class="category-left">
+        <span class="category-icon" style="color:#ec4899">event</span>
+        <span class="category-name">Nadchodzące</span>
+      </div>
+      <div class="category-right">
+        <span class="category-count" id="count-upcoming">0</span>
+        <span class="category-arrow">chevron_right</span>
+      </div>
+    </div>
+
+    <div class="category-card" onclick="openView('anytime')">
+      <div class="category-left">
+        <span class="category-icon" style="color:#64748b">inventory_2</span>
+        <span class="category-name">Kiedykolwiek</span>
+      </div>
+      <div class="category-right">
+        <span class="category-count" id="count-anytime">0</span>
+        <span class="category-arrow">chevron_right</span>
+      </div>
+    </div>
+
+    <div class="category-card" onclick="openView('history')">
+      <div class="category-left">
+        <span class="category-icon" style="color:#6b7280">history</span>
+        <span class="category-name">Historia</span>
+      </div>
+      <div class="category-right">
+        <span class="category-arrow">chevron_right</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ZADANIA -->
+<div class="screen" id="assignedScreen">
+  <div class="view-header">
+    <button class="back-btn" onclick="goHome()">arrow_back</button>
+    <div class="view-title"><span class="view-icon" style="color:#10b981">assignment</span> Zadania</div>
+  </div>
+  <div id="tasks-assigned"></div>
+</div>
+
+<!-- DZISIAJ -->
+<div class="screen" id="todayScreen">
+  <div class="view-header">
+    <button class="back-btn" onclick="goHome()">arrow_back</button>
+    <div>
+      <div class="view-title"><span class="view-icon" style="color:#f59e0b">star</span> Dzisiaj</div>
+      <div class="view-subtitle" id="today-date"></div>
+    </div>
+  </div>
+  <div id="tasks-today-main"></div>
+  <div class="today-evening-block" id="today-evening-block">
+    <div class="today-evening-header">
+      <span class="material-symbols-rounded">nightlight</span>
+      <span>Dziś wieczorem</span>
+    </div>
+    <div id="tasks-today-evening"></div>
+  </div>
+</div>
+
+<!-- DZIŚ WIECZOREM (osobny widok) -->
+<div class="screen" id="eveningScreen">
+  <div class="view-header">
+    <button class="back-btn" onclick="goHome()">arrow_back</button>
+    <div>
+      <div class="view-title"><span class="view-icon" style="color:#6366f1">nightlight</span> Dziś wieczorem</div>
+      <div class="view-subtitle">Po 18:00</div>
+    </div>
+  </div>
+  <div id="tasks-evening"></div>
+</div>
+
+<!-- TEN TYDZIEŃ -->
+<div class="screen" id="thisweekScreen">
+  <div class="view-header">
+    <button class="back-btn" onclick="goHome()">arrow_back</button>
+    <div>
+      <div class="view-title"><span class="view-icon" style="color:#8b5cf6">date_range</span> Ten tydzień</div>
+      <div class="view-subtitle" id="thisweek-subtitle"></div>
+    </div>
+  </div>
+  <div id="tasks-thisweek"></div>
+</div>
+
+<!-- NADCHODZĄCE -->
+<div class="screen" id="upcomingScreen">
+  <div class="view-header sticky">
+    <button class="back-btn" onclick="goHome()">arrow_back</button>
+    <div class="view-title">
+      <span class="view-icon" style="color:#ec4899">event</span> Nadchodzące
+    </div>
+  </div>
+  <div id="tasks-upcoming"></div>
+</div>
+
+<!-- KIEDYKOLWIEK -->
+<div class="screen" id="anytimeScreen">
+  <div class="view-header">
+    <button class="back-btn" onclick="goHome()">arrow_back</button>
+    <div>
+      <div class="view-title"><span class="view-icon" style="color:#64748b">inventory_2</span> Kiedykolwiek</div>
+      <div class="view-subtitle">Zadania bez daty</div>
+    </div>
+  </div>
+  <div id="tasks-anytime"></div>
+</div>
+
+<!-- HISTORIA -->
+<div class="screen" id="historyScreen">
+  <div class="view-header">
+    <button class="back-btn" onclick="goHome()">arrow_back</button>
+    <div>
+      <div class="view-title"><span class="view-icon" style="color:#6b7280">history</span> Historia</div>
+      <div class="view-subtitle">Ostatnie 30 dni</div>
+    </div>
+  </div>
+  <div id="tasks-history"></div>
+</div>
+
+<!-- FAB -->
+<button class="fab" onclick="openAddSheet()">add</button>
+
+<!-- SHEET DODAJ/EDYTUJ -->
+<div class="sheet-overlay" id="addSheet" onclick="closeAddSheetIfOverlay(event)">
+  <div class="sheet-content" onclick="event.stopPropagation()">
+    <div class="sheet-header">
+      <div class="sheet-title" id="sheetTitleLabel">Nowe zadanie</div>
+      <button class="sheet-close-btn" onclick="closeAddSheet()">close</button>
+    </div>
+    <div class="sheet-body">
+      <form id="addTaskForm" onsubmit="saveTask(event)">
+        <div class="form-group">
+          <input id="taskTitle" class="form-input" placeholder="Nazwa zadania" required />
+        </div>
+
+        <div class="form-group">
+          <div class="form-label-row">
+            <div class="form-label">Notatki / Subzadania</div>
+            <button type="button" id="checklistToggleBtn" class="checklist-toggle-btn" onclick="toggleChecklistMode()">
+              <span class="material-symbols-rounded">checklist</span> checklist
+            </button>
+          </div>
+          <textarea id="taskNotes" class="form-textarea" placeholder="Notatki (opcjonalnie)"></textarea>
+          <div id="checklistEditor" class="checklist-editor"></div>
+        </div>
+
+        <div class="form-group">
+          <div class="form-label">Kiedy?</div>
+          <div class="date-options">
+            <div class="date-option" data-type="DZISIAJ" onclick="selectDate(event,'DZISIAJ')">
+              <span class="date-option-icon" style="color:#f59e0b">star</span>
+              <div>
+                <div class="date-option-title">Dzisiaj</div>
+                <div class="date-option-sub" id="today-label"></div>
+              </div>
+            </div>
+            <div class="date-option" data-type="WIECZOREM" onclick="selectDate(event,'WIECZOREM')">
+              <span class="date-option-icon" style="color:#6366f1">nightlight</span>
+              <div>
+                <div class="date-option-title">Dziś wieczorem</div>
+                <div class="date-option-sub">Po 18:00</div>
+              </div>
+            </div>
+            <div class="date-option selected" data-type="KIEDYKOLWIEK" onclick="selectDate(event,'KIEDYKOLWIEK')">
+              <span class="date-option-icon" style="color:#64748b">inventory_2</span>
+              <div>
+                <div class="date-option-title">Kiedykolwiek</div>
+                <div class="date-option-sub">Bez konkretnej daty</div>
+              </div>
+            </div>
+            <div class="date-option" data-type="CUSTOM" onclick="selectDate(event,'CUSTOM')">
+              <span class="date-option-icon" style="color:#ec4899">event</span>
+              <div>
+                <div class="date-option-title">Konkretny dzień</div>
+                <div class="date-option-sub" id="custom-label">Wybierz z kalendarza</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <button type="submit" class="btn">Zapisz</button>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- KALENDARZ POPUP -->
+<div class="calendar-popup" id="calendarPopup" onclick="calendarOverlayClick(event)">
+  <div class="calendar-content" onclick="event.stopPropagation()">
+    <div class="calendar-header">
+      <button class="calendar-nav" onclick="changeMonth(-1)">chevron_left</button>
+      <div class="calendar-month-label" id="calendarMonth"></div>
+      <button class="calendar-nav" onclick="changeMonth(1)">chevron_right</button>
+    </div>
+    <div class="calendar-grid" id="calendarGrid"></div>
+  </div>
+</div>
+
+<!-- MENU ⋮ -->
+<div class="task-menu" id="taskMenu">
+  <button class="task-menu-item" onclick="startEditTask()">
+    <span class="icon material-symbols-rounded">edit</span> Edytuj
+  </button>
+  <button class="task-menu-item task-menu-delete" onclick="openDeleteModalFromMenu()">
+    <span class="icon material-symbols-rounded">delete</span> Usuń
+  </button>
+</div>
+
+<!-- DELETE MODAL -->
+<div id="deleteModal" onclick="closeDeleteModalByBg(event)">
+  <div class="delete-box" onclick="event.stopPropagation()">
+    <div class="delete-title">Usunąć zadanie?</div>
+    <div class="delete-text">Tej operacji nie można cofnąć.</div>
+    <div class="delete-actions">
+      <button class="btn-outline" onclick="closeDeleteModal()">Anuluj</button>
+      <button class="btn-danger" onclick="confirmDeleteModal()">
+        <span class="material-symbols-rounded">delete</span> Usuń
+      </button>
+    </div>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+  const API_URL = 'https://script.google.com/macros/s/AKfycbzLIrnwgFgJ2Q_gIHpO5O3YE0uu7gAxrRGAW0rnkBD-pB_c5vcIMJCEW-KHs0G2g6Zz/exec';
+  let currentUser = localStorage.getItem('currentUser') || 'TEST_USER';
+
+  let allTasks = [];
+  let selectedDateOption = 'KIEDYKOLWIEK';
+  let selectedCustomDate = null;
+  let calendarDate = new Date();
+  let editingTaskId = null;
+  let draggedTaskId = null;
+  let taskMenuTaskId = null;
+  let pendingDeleteTaskId = null;
+  let currentScreenId = 'homeScreen';
+  let isAnimating = false;
+
+  // checklist state for sheet
+  let notesMode = 'text'; // 'text' | 'checklist'
+  let checklistItems = [];
+
+  const $ = id => document.getElementById(id);
+
+  function formatLocalISO(d) {
+    const y = d.getFullYear();
+    const m = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    return `${y}-${m}-${day}`;
+  }
+
+  const todayISO = () => formatLocalISO(new Date());
+
+  const formatFullDate = d =>
+    new Date(d).toLocaleDateString('pl-PL', {
+      weekday: 'long', day: 'numeric', month: 'long', year: 'numeric'
+    });
+
+  const formatShortDate = d =>
+    new Date(d).toLocaleDateString('pl-PL', { day:'numeric', month:'long' });
+
+  function toast(msg) {
+    const t = $('toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 1800);
+  }
+
+  const uuid = () =>
+    'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => {
+      const r = Math.random()*16|0, v = c === 'x' ? r : (r&0x3|0x8);
+      return v.toString(16);
+    });
+
+  async function callAPI(action, params = {}) {
+    try {
+      const url = new URL(API_URL);
+      url.searchParams.append('action', action);
+      Object.keys(params).forEach(k => url.searchParams.append(k, params[k]));
+      const res = await fetch(url);
+      if (!res.ok) throw new Error('Network');
+      return await res.json();
+    } catch (e) {
+      console.error(e);
+      return null;
+    }
+  }
+
+  function saveTasks() {
+    localStorage.setItem('tasks_' + currentUser, JSON.stringify(allTasks));
+  }
+  function loadTasks() {
+    const s = localStorage.getItem('tasks_' + currentUser);
+    if (s) allTasks = JSON.parse(s);
+  }
+
+  async function syncTasks() {
+    const res = await callAPI('getTasks', { handlowiec: currentUser });
+    if (res && res.status === 'ok' && Array.isArray(res.data)) {
+      allTasks = allTasks.filter(t => t.type !== 'ZLECONE');
+      res.data.forEach(r => {
+        allTasks.push({
+          id: r.ID,
+          type: 'ZLECONE',
+          taskType: r.TYP,
+          createdBy: r.UTWORZYŁ,
+          forWho: r.DLA_KOGO,
+          title: r.ZADANIE,
+          notes: r.NOTATKI || '',
+          date: r.DATA,
+          status: r.STATUS,
+          completedBy: r.KTO_WYKONAŁ || '',
+          completedAt: r.DATA_WYKONANIA || ''
+        });
+      });
+      saveTasks();
+    }
+    updateCounts();
+    const active = document.querySelector('.screen.active');
+    if (active && active.id !== 'homeScreen') {
+      renderView(active.id.replace('Screen',''));
+    }
+  }
+
+  function normalizeDateForTodayLike(val, todayStr) {
+    if (val === 'DZISIAJ' || val === 'WIECZOREM') return todayStr;
+    return val;
+  }
+
+  function updateCounts() {
+    const today = todayISO();
+    const endOfWeek = (() => {
+      const d = new Date();
+      const day = d.getDay() || 7;
+      d.setDate(d.getDate() + (7 - day));
+      return formatLocalISO(d);
+    })();
+    const endOfMonth = (() => {
+      const d = new Date();
+      const e = new Date(d.getFullYear(), d.getMonth()+1, 0);
+      return formatLocalISO(e);
+    })();
+
+    const counts = {
+      assigned: allTasks.filter(t => t.type === 'ZLECONE' && t.status === 'DO_ZROBIENIA').length,
+      today: allTasks.filter(t => {
+        if (t.status !== 'DO_ZROBIENIA') return false;
+        if (!t.date) return false;
+        const real = normalizeDateForTodayLike(t.date, today);
+        return real === today;
+      }).length,
+      evening: allTasks.filter(t => t.status === 'DO_ZROBIENIA' && t.date === 'WIECZOREM').length,
+      thisweek: allTasks.filter(t => {
+        if (t.status !== 'DO_ZROBIENIA') return false;
+        if (!t.date || t.date === 'KIEDYKOLWIEK') return false;
+        const real = normalizeDateForTodayLike(t.date, today);
+        return real >= today && real <= endOfWeek;
+      }).length,
+      upcoming: allTasks.filter(t => {
+        if (t.status !== 'DO_ZROBIENIA') return false;
+        if (!t.date || t.date === 'KIEDYKOLWIEK') return false;
+        const real = normalizeDateForTodayLike(t.date, today);
+        return real >= today && real <= endOfMonth;
+      }).length,
+      anytime: allTasks.filter(t => t.status === 'DO_ZROBIENIA' && t.date === 'KIEDYKOLWIEK').length
+    };
+
+    for (const k in counts) {
+      const el = $('count-' + k);
+      if (!el) continue;
+      el.textContent = counts[k];
+      el.style.opacity = counts[k] ? '1' : '.3';
+    }
+  }
+
+  /* Nawigacja */
+
+  function openView(view) {
+    if (isAnimating) return;
+    const targetId = view + 'Screen';
+    if (targetId === currentScreenId) return;
+
+    const current = $(currentScreenId);
+    const next = $(targetId);
+    if (!next || !current) return;
+
+    isAnimating = true;
+
+    next.classList.add('active');
+    next.style.pointerEvents = 'auto';
+    next.style.transform = 'translateX(100%)';
+    next.style.opacity = '0';
+
+    renderView(view);
+
+    requestAnimationFrame(() => {
+      next.style.transform = 'translateX(0)';
+      next.style.opacity = '1';
+
+      current.style.transform = 'translateX(-20%)';
+      current.style.opacity = '0';
+      current.style.pointerEvents = 'none';
+
+      const onEnd = (e) => {
+        if (e.target !== next) return;
+        next.removeEventListener('transitionend', onEnd);
+
+        current.classList.remove('active');
+        current.style.transform = 'translateX(100%)';
+        current.style.opacity = '0';
+
+        currentScreenId = targetId;
+        isAnimating = false;
+      };
+      next.addEventListener('transitionend', onEnd);
+    });
+  }
+
+  function goHome() {
+    if (isAnimating) return;
+    if (currentScreenId === 'homeScreen') return;
+
+    const current = $(currentScreenId);
+    const home = $('homeScreen');
+    if (!current || !home) return;
+
+    isAnimating = true;
+
+    home.classList.add('active');
+    home.style.pointerEvents = 'auto';
+    home.style.transform = 'translateX(-20%)';
+    home.style.opacity = '0';
+
+    requestAnimationFrame(() => {
+      home.style.transform = 'translateX(0)';
+      home.style.opacity = '1';
+
+      current.style.transform = 'translateX(100%)';
+      current.style.opacity = '0';
+      current.style.pointerEvents = 'none';
+
+      const onEnd = (e) => {
+        if (e.target !== home) return;
+        home.removeEventListener('transitionend', onEnd);
+
+        current.classList.remove('active');
+        currentScreenId = 'homeScreen';
+        updateCounts();
+        isAnimating = false;
+      };
+      home.addEventListener('transitionend', onEnd);
+    });
+  }
+
+  /* Render */
+
+  function emptyHtml() {
+    return '<div class="empty-state"><div class="empty-icon">event</div>Brak zadań</div>';
+  }
+
+  function renderView(view) {
+    if (view === 'history') return renderHistory();
+    if (view === 'thisweek') return renderThisWeek();
+    if (view === 'upcoming') return renderUpcoming();
+    if (view === 'today') return renderTodayView();
+
+    const c = $('tasks-' + view);
+    if (!c) return;
+
+    const today = todayISO();
+    let list = [];
+
+    switch(view) {
+      case 'assigned':
+        list = allTasks.filter(t => t.type === 'ZLECONE' && t.status === 'DO_ZROBIENIA');
+        break;
+      case 'evening':
+        list = allTasks.filter(t => t.status === 'DO_ZROBIENIA' && t.date === 'WIECZOREM');
+        break;
+      case 'anytime':
+        list = allTasks.filter(t => t.status === 'DO_ZROBIENIA' && t.date === 'KIEDYKOLWIEK');
+        break;
+    }
+
+    if (!list.length) {
+      c.innerHTML = emptyHtml();
+    } else {
+      c.innerHTML = list.map(t => renderTask(t, false, false)).join('');
+    }
+  }
+
+  function renderHistory() {
+    const c = $('tasks-history');
+    const since = new Date();
+    since.setDate(since.getDate() - 30);
+    const sinceStr = formatLocalISO(since);
+
+    const list = allTasks.filter(t => {
+      if (t.status !== 'WYKONANE') return false;
+      const when = t.completedAt || t.date;
+      if (!when) return false;
+      const d = new Date(when);
+      if (isNaN(d)) return false;
+      const iso = formatLocalISO(d);
+      return iso >= sinceStr;
+    });
+
+    if (!list.length) {
+      c.innerHTML = emptyHtml();
+      return;
+    }
+    c.innerHTML = list.map(t => renderTask(t, false, true)).join('');
+  }
+
+  function renderTodayView() {
+    const today = todayISO();
+    const mainC = $('tasks-today-main');
+    const eveC = $('tasks-today-evening');
+
+    const todayTasks = allTasks.filter(t => {
+      if (t.status !== 'DO_ZROBIENIA') return false;
+      if (!t.date) return false;
+      const real = normalizeDateForTodayLike(t.date, today);
+      return real === today && t.date !== 'WIECZOREM';
+    });
+
+    const eveningTasks = allTasks.filter(t => {
+      if (t.status !== 'DO_ZROBIENIA') return false;
+      return t.date === 'WIECZOREM';
+    });
+
+    mainC.innerHTML = todayTasks.length
+      ? todayTasks.map(t => renderTask(t, false, false)).join('')
+      : emptyHtml();
+
+    eveC.innerHTML = eveningTasks.length
+      ? eveningTasks.map(t => renderTask(t, false, false)).join('')
+      : '<div class="task-notes">Brak zadań na dziś wieczór.</div>';
+  }
+
+  function renderThisWeek() {
+    const container = $('tasks-thisweek');
+    const today = new Date();
+    const todayStr = todayISO();
+    const day = today.getDay() || 7;
+    const end = new Date(today);
+    end.setDate(today.getDate() + (7 - day));
+
+    let html = '';
+    let d = new Date(today);
+
+    while (formatLocalISO(d) <= formatLocalISO(end)) {
+      const dateStr = formatLocalISO(d);
+
+      const tasksForDay = allTasks.filter(t => {
+        if (t.status !== 'DO_ZROBIENIA') return false;
+        if (!t.date || t.date === 'KIEDYKOLWIEK') return false;
+        const real = normalizeDateForTodayLike(t.date, todayStr);
+        return real === dateStr;
+      });
+
+      html += dateHeaderHtml(dateStr, dateStr === todayStr);
+      tasksForDay.forEach(t => { html += renderTask(t, true, false); });
+      html += '</div>';
+
+      d = new Date(d.getFullYear(), d.getMonth(), d.getDate() + 1);
+    }
+
+    container.innerHTML = html || emptyHtml();
+  }
+
+  function renderUpcoming() {
+    const container = $('tasks-upcoming');
+    const today = new Date();
+    const todayStr = todayISO();
+    const year = today.getFullYear();
+    const month = today.getMonth();
+    const endOfMonthDate = new Date(year, month + 1, 0);
+    const endOfMonthStr = formatLocalISO(endOfMonthDate);
+
+    let html = '';
+
+    let d = new Date(today);
+    while (formatLocalISO(d) <= endOfMonthStr) {
+      const dateStr = formatLocalISO(d);
+
+      const tasksForDay = allTasks.filter(t => {
+        if (t.status !== 'DO_ZROBIENIA') return false;
+        if (!t.date || t.date === 'KIEDYKOLWIEK') return false;
+        const real = normalizeDateForTodayLike(t.date, todayStr);
+        return real === dateStr;
+      });
+
+      html += dateHeaderHtml(dateStr, dateStr === todayStr);
+      tasksForDay.forEach(t => { html += renderTask(t, true, false); });
+      html += '</div>';
+
+      d = new Date(d.getFullYear(), d.getMonth(), d.getDate() + 1);
+    }
+
+    const future = [];
+    allTasks.forEach(t => {
+      if (t.status !== 'DO_ZROBIENIA') return;
+      if (!t.date || t.date === 'KIEDYKOLWIEK') return;
+      const real = normalizeDateForTodayLike(t.date, todayStr);
+      if (real > endOfMonthStr) future.push({ ...t, realDate: real });
+    });
+
+    if (future.length) {
+      const months = {};
+      future.forEach(t => {
+        const key = t.realDate.slice(0,7);
+        if (!months[key]) months[key] = [];
+        months[key].push(t);
+      });
+
+      Object.keys(months).sort().forEach(key => {
+        const [y,m] = key.split('-');
+        const labelDate = new Date(parseInt(y,10), parseInt(m,10)-1, 1);
+        let label = labelDate.toLocaleDateString('pl-PL', { month:'long' });
+        label = label.charAt(0).toUpperCase() + label.slice(1);
+        html += '<div class="month-header">' + label + '</div>';
+
+        months[key]
+          .sort((a,b) => a.realDate.localeCompare(b.realDate))
+          .forEach(t => {
+            const isPersonal = t.type === 'OSOBISTE';
+            const isCompleted = t.status === 'WYKONANE';
+            const draggable =
+              (isPersonal && !isCompleted)
+                ? 'draggable="true" ondragstart="onTaskDragStart(event,\'' + t.id + '\')"' : '';
+            const checkboxClass = 'task-checkbox ' + (isCompleted ? 'checked' : '');
+            const menuBtn = isPersonal
+              ? '<button class="task-menu-btn" onclick="openTaskMenu(event,\'' + t.id + '\')">more_vert</button>'
+              : '';
+            const dd = t.realDate.slice(8,10);
+            const mm = t.realDate.slice(5,7);
+            const dateLabel = dd + '.' + mm;
+
+            html +=
+              '<div class="task-item upcoming-compact ' + (isCompleted ? 'completed' : '') + '" data-id="' + t.id + '" ' + draggable + '>' +
+                '<div class="' + checkboxClass + '"' +
+                  ' onclick="event.stopPropagation();toggleTask(\'' + t.id + '\')">' +
+                  '<span class="icon">check</span>' +
+                '</div>' +
+                '<div class="task-content" onclick="onTaskClick(\'' + t.id + '\')">' +
+                  '<div class="task-title"><span class="upcoming-compact-date">' + dateLabel + '</span>' +
+                    (t.title || '') + '</div>' +
+                '</div>' +
+                menuBtn +
+              '</div>';
+          });
+      });
+    }
+
+    container.innerHTML = html || emptyHtml();
+  }
+
+  function dateHeaderHtml(dateStr, isToday) {
+    const d = new Date(dateStr);
+    const dayNum = d.getDate();
+    const weekday = d.toLocaleDateString('pl-PL', { weekday: 'long' });
+    return (
+      '<div class="date-group' + (isToday ? ' today' : '') + '" ' +
+      'data-date="' + dateStr + '" ' +
+      'ondragover="onDateDragOver(event)" ' +
+      'ondrop="onDateDrop(event,\'' + dateStr + '\')">' +
+        '<div class="date-header">' +
+          '<div class="date-number">' + dayNum + '</div>' +
+          '<div class="date-label">' + weekday.charAt(0).toUpperCase() + weekday.slice(1) + '</div>' +
+        '</div>'
+    );
+  }
+
+  function renderTask(task, inUpcoming=false, inHistory=false) {
+    const isCompleted = task.status === 'WYKONANE';
+    const isPersonal = task.type === 'OSOBISTE';
+    const isGroup = task.taskType === 'GRUPOWE';
+
+    let historyInfo = '';
+    if (inHistory) {
+      const when = task.completedAt || task.date;
+      if (when) {
+        const d = new Date(when);
+        historyInfo = !isNaN(d) ? ('🗓️ Wykonano: ' + formatFullDate(d)) : ('🗓️ Wykonano: ' + when);
+      }
+    }
+
+    if (inUpcoming) {
+      const draggable =
+        (isPersonal && !isCompleted)
+          ? 'draggable="true" ondragstart="onTaskDragStart(event,\'' + task.id + '\')"' : '';
+      const checkboxClass = 'task-checkbox ' + (isCompleted ? 'checked' : '');
+      const menuBtn = isPersonal
+        ? '<button class="task-menu-btn" onclick="openTaskMenu(event,\'' + task.id + '\')">more_vert</button>'
+        : '';
+      return '' +
+        '<div class="task-item upcoming-compact ' + (isCompleted ? 'completed' : '') + '" data-id="' + task.id + '" ' + draggable + '>' +
+          '<div class="' + checkboxClass + '"' +
+            ' onclick="event.stopPropagation();toggleTask(\'' + task.id + '\')">' +
+            '<span class="icon">check</span>' +
+          '</div>' +
+          '<div class="task-content" onclick="onTaskClick(\'' + task.id + '\')">' +
+            '<div class="task-title">' + (task.title || '') + '</div>' +
+          '</div>' +
+          menuBtn +
+        '</div>';
+    }
+
+    let tags = '';
+    if (!inHistory && task.type === 'ZLECONE') {
+      tags += '<span class="task-tag type">' + (isGroup ? 'GRUPOWE' : 'INDYWIDUALNE') + '</span>';
+    }
+
+    const menuBtn = isPersonal
+      ? '<button class="task-menu-btn" onclick="openTaskMenu(event,\'' + task.id + '\')">more_vert</button>'
+      : '';
+
+    const notesHtml = renderNotes(task, inHistory);
+
+    // UPDATE v3.3b: Strzałka do rozwijania notatek/checklisty z animacją.
+    const hasDetails = !!(historyInfo || notesHtml);
+
+    let titleRowHtml = '<div class="task-title-row">' +
+      '<div class="task-title">' + (task.title || '') + '</div>';
+
+    if (hasDetails) {
+      titleRowHtml += '<span class="expand-arrow" onclick="toggleSubtasks(event, \''
+        + task.id +
+      '\')">expand_more</span>';
+    }
+
+    titleRowHtml += '</div>';
+
+    let detailsHtml = '';
+    if (hasDetails) {
+      detailsHtml += '<div class="task-details" data-details-for="' + task.id + '">';
+      if (historyInfo) {
+        detailsHtml += '<div class="task-notes">' + historyInfo + '</div>';
+      }
+      if (notesHtml) {
+        detailsHtml += notesHtml;
+      }
+      detailsHtml += '</div>';
+    }
+
+    return '' +
+      '<div class="task-item ' + (isCompleted ? 'completed' : '') + '" data-id="' + task.id + '">' +
+        '<div class="task-checkbox ' + (isCompleted ? 'checked' : '') + '"' +
+          ' onclick="event.stopPropagation();toggleTask(\'' + task.id + '\')">' +
+          '<span class="icon">check</span>' +
+        '</div>' +
+        '<div class="task-content" onclick="onTaskClick(\'' + task.id + '\')">' +
+          titleRowHtml +
+          (tags ? '<div class="task-meta">' + tags + '</div>' : '') +
+          detailsHtml +
+        '</div>' +
+        menuBtn +
+      '</div>';
+  }
+
+  function looksLikeChecklist(notes) {
+    if (!notes) return false;
+    const lines = notes.split('\n').map(l => l.trim());
+    const checklistLines = lines.filter(l => /^-\s*\[( |x|X)\]\s+.+/.test(l));
+    return checklistLines.length > 0 && checklistLines.length >= (lines.length / 2);
+  }
+
+  function renderNotes(task, inHistory) {
+    if (!task.notes || inHistory && looksLikeChecklist(task.notes) === false) {
+      if (inHistory && !task.notes) return '';
+      if (!task.notes) return '';
+    }
+
+    if (looksLikeChecklist(task.notes)) {
+      const lines = task.notes.split('\n').map(l => l.trim()).filter(l => l);
+      let html = '<ul class="checklist-view">';
+      lines.forEach(line => {
+        const m = /^-\s*\[( |x|X)\]\s+(.+)$/.exec(line);
+        if (!m) return;
+        const done = (m[1].toLowerCase() === 'x');
+        const text = m[2];
+        html +=
+          '<li class="checklist-item ' + (done ? 'done' : '') + '">' +
+            '<div class="checklist-checkbox ' + (done ? 'checked' : '') + '">' +
+              '<span class="material-symbols-rounded">check</span>' +
+            '</div>' +
+            '<div class="checklist-text">' + text + '</div>' +
+          '</li>';
+      });
+      html += '</ul>';
+      return html;
+    } else {
+      return '<div class="task-notes">' + (task.notes || '') + '</div>';
+    }
+  }
+
+  function onTaskClick(id) {
+    const t = allTasks.find(x => x.id === id);
+    if (!t) return;
+    if (t.type === 'OSOBISTE') openEditTask(id);
+  }
+
+  /* Checkbox animacja + logika */
+
+  function animateCheckboxById(id) {
+    const el = document.querySelector('.task-item[data-id="'+id+'"] .task-checkbox');
+    if (!el) return;
+    el.classList.add('pop');
+    setTimeout(() => el.classList.remove('pop'), 120);
+  }
+
+  function toggleTask(id) {
+    const t = allTasks.find(x => x.id === id);
+    if (!t) return;
+
+    const wasTodo = t.status === 'DO_ZROBIENIA';
+
+    if (wasTodo) {
+      t.status = 'WYKONANE';
+      t.completedBy = currentUser;
+      t.completedAt = new Date().toISOString();
+      if (t.type === 'ZLECONE') {
+        callAPI('updateTask', {
+          id: t.id,
+          status: 'WYKONANE',
+          who: currentUser,
+          when: t.completedAt
+        });
+      }
+      toast('Oznaczono jako wykonane');
+    } else {
+      if (t.type === 'OSOBISTE') {
+        t.status = 'DO_ZROBIENIA';
+        t.completedBy = '';
+        t.completedAt = '';
+        toast('Przywrócono zadanie');
+      } else {
+        toast('To zadanie z biura. Status zmienia biuro.');
+      }
+    }
+
+    saveTasks();
+    updateCounts();
+
+    const active = document.querySelector('.screen.active');
+    if (active && active.id !== 'homeScreen') {
+      const view = active.id.replace('Screen','');
+      renderView(view);
+      if (wasTodo) animateCheckboxById(id);
+    } else {
+      if (wasTodo) animateCheckboxById(id);
+    }
+  }
+
+  /* DRAG & DROP */
+
+  function onTaskDragStart(e, id) {
+    const t = allTasks.find(x => x.id === id);
+    if (!t || t.type !== 'OSOBISTE' || t.status !== 'DO_ZROBIENIA') {
+      e.preventDefault();
+      return;
+    }
+    draggedTaskId = id;
+
+    if (e.dataTransfer) {
+      e.dataTransfer.effectAllowed = 'move';
+      e.dataTransfer.setData('text/plain', id);
+
+      const ghost = document.createElement('div');
+      ghost.style.position = 'fixed';
+      ghost.style.top = '-999px';
+      ghost.style.left = '-999px';
+      ghost.style.padding = '6px 10px';
+      ghost.style.borderRadius = '10px';
+      ghost.style.background = '#ffffff';
+      ghost.style.boxShadow = '0 3px 8px rgba(15,23,42,.25)';
+      ghost.style.fontSize = '12px';
+      ghost.style.fontWeight = '500';
+      ghost.style.color = '#111827';
+      ghost.textContent = t.title || 'Zadanie';
+      document.body.appendChild(ghost);
+      e.dataTransfer.setDragImage(ghost, 10, 10);
+      setTimeout(() => document.body.removeChild(ghost), 0);
+    }
+  }
+
+  function onDateDragOver(e) {
+    if (!draggedTaskId) return;
+    e.preventDefault();
+    document.querySelectorAll('.date-group.drop-target')
+      .forEach(el => el.classList.remove('drop-target'));
+    e.currentTarget.classList.add('drop-target');
+  }
+
+  function onDateDrop(e, dateStr) {
+    e.preventDefault();
+    e.currentTarget.classList.remove('drop-target');
+
+    const id = draggedTaskId || (e.dataTransfer && e.dataTransfer.getData('text/plain'));
+    draggedTaskId = null;
+    if (!id) return;
+
+    const t = allTasks.find(x => x.id === id);
+    if (!t || t.type !== 'OSOBISTE') return;
+
+    t.date = dateStr;
+    saveTasks();
+    updateCounts();
+
+    if ($('upcomingScreen').classList.contains('active')) renderUpcoming();
+    if ($('thisweekScreen').classList.contains('active')) renderThisWeek();
+
+    toast('Przeniesiono na ' + formatShortDate(dateStr));
+  }
+
+  document.addEventListener('dragend', () => {
+    draggedTaskId = null;
+    document.querySelectorAll('.date-group.drop-target')
+      .forEach(el => el.classList.remove('drop-target'));
+  });
+
+  /* MENU ⋮ */
+
+  function openTaskMenu(e, id) {
+    e.stopPropagation();
+    const t = allTasks.find(x => x.id === id);
+    if (!t || t.type !== 'OSOBISTE') return;
+
+    taskMenuTaskId = id;
+    const menu = $('taskMenu');
+    const rect = e.currentTarget.getBoundingClientRect();
+    menu.style.display = 'block';
+    menu.style.top = (rect.bottom + window.scrollY + 4) + 'px';
+    menu.style.left = (rect.right + window.scrollX - 150) + 'px';
+  }
+
+  function closeTaskMenu() {
+    $('taskMenu').style.display = 'none';
+    taskMenuTaskId = null;
+  }
+
+  document.addEventListener('click', e => {
+    const menu = $('taskMenu');
+    if (menu.style.display === 'block' && !menu.contains(e.target)) closeTaskMenu();
+  });
+
+  function startEditTask() {
+    if (!taskMenuTaskId) return;
+    openEditTask(taskMenuTaskId);
+    closeTaskMenu();
+  }
+
+  function openDeleteModalFromMenu() {
+    if (!taskMenuTaskId) return;
+    pendingDeleteTaskId = taskMenuTaskId;
+    closeTaskMenu();
+    openDeleteModal();
+  }
+
+  /* DELETE MODAL */
+
+  function openDeleteModal() {
+    const m = $('deleteModal');
+    m.classList.add('active');
+  }
+
+  function closeDeleteModal() {
+    const m = $('deleteModal');
+    m.classList.remove('active');
+    pendingDeleteTaskId = null;
+  }
+
+  function closeDeleteModalByBg(e) {
+    if (e.target.id === 'deleteModal') closeDeleteModal();
+  }
+
+  function confirmDeleteModal() {
+    if (!pendingDeleteTaskId) {
+      closeDeleteModal();
+      return;
+    }
+    const t = allTasks.find(x => x.id === pendingDeleteTaskId);
+    if (!t || t.type !== 'OSOBISTE') {
+      closeDeleteModal();
+      return;
+    }
+    allTasks = allTasks.filter(x => x.id !== pendingDeleteTaskId);
+    saveTasks();
+    updateCounts();
+    const active = document.querySelector('.screen.active');
+    if (active && active.id !== 'homeScreen') {
+      renderView(active.id.replace('Screen',''));
+    }
+    toast('Usunięto zadanie');
+    closeDeleteModal();
+  }
+
+  /* DODAWANIE / EDYCJA + CHECKLISTA */
+
+  function resetChecklistEditor() {
+    notesMode = 'text';
+    checklistItems = [];
+    $('taskNotes').style.display = 'block';
+    const btn = $('checklistToggleBtn');
+    btn.classList.remove('active');
+    $('checklistEditor').classList.remove('active');
+    $('checklistEditor').innerHTML = '';
+  }
+
+  function openAddSheet() {
+    editingTaskId = null;
+    $('sheetTitleLabel').textContent = 'Nowe zadanie';
+    $('taskTitle').value = '';
+    $('taskNotes').value = '';
+    resetChecklistEditor();
+    setDateOption('KIEDYKOLWIEK', null);
+    $('addSheet').classList.add('active');
+    setTimeout(() => $('taskTitle').focus(), 60);
+  }
+
+  function openEditTask(id) {
+    const t = allTasks.find(x => x.id === id);
+    if (!t || t.type !== 'OSOBISTE') {
+      toast('To zadanie może edytować tylko biuro');
+      return;
+    }
+    editingTaskId = id;
+    $('sheetTitleLabel').textContent = 'Edytuj zadanie';
+    $('taskTitle').value = t.title || '';
+    $('taskNotes').value = t.notes || '';
+
+    resetChecklistEditor();
+    if (looksLikeChecklist(t.notes)) {
+      notesMode = 'checklist';
+      const btn = $('checklistToggleBtn');
+      btn.classList.add('active');
+      $('taskNotes').style.display = 'none';
+      parseNotesToChecklist(t.notes);
+      renderChecklistEditor();
+      $('checklistEditor').classList.add('active');
+    }
+
+    if (t.date === 'DZISIAJ' || t.date === todayISO()) {
+      setDateOption('DZISIAJ', null);
+    } else if (t.date === 'WIECZOREM') {
+      setDateOption('WIECZOREM', null);
+    } else if (!t.date || t.date === 'KIEDYKOLWIEK') {
+      setDateOption('KIEDYKOLWIEK', null);
+    } else {
+      setDateOption('CUSTOM', t.date);
+    }
+
+    $('addSheet').classList.add('active');
+    setTimeout(() => $('taskTitle').focus(), 60);
+  }
+
+  function closeAddSheet() {
+    $('addSheet').classList.remove('active');
+    editingTaskId = null;
+    resetChecklistEditor();
+  }
+
+  function closeAddSheetIfOverlay(e) {
+    if (e.target.id === 'addSheet') closeAddSheet();
+  }
+
+  function setDateOption(opt, customDate) {
+    selectedDateOption = opt;
+    selectedCustomDate = customDate;
+    document.querySelectorAll('.date-option').forEach(o => o.classList.remove('selected'));
+    const el = document.querySelector('.date-option[data-type="' + opt + '"]');
+    if (el) el.classList.add('selected');
+
+    if (opt === 'CUSTOM' && customDate) {
+      $('custom-label').textContent = formatShortDate(customDate);
+    } else if (opt !== 'CUSTOM') {
+      $('custom-label').textContent = 'Wybierz z kalendarza';
+    }
+  }
+
+  function selectDate(ev, opt) {
+    ev.stopPropagation();
+    if (opt === 'CUSTOM') {
+      selectedDateOption = 'CUSTOM';
+      openCalendarPopup();
+    } else {
+      setDateOption(opt, null);
+    }
+  }
+
+  /* CHECKLISTA - w notatkach */
+
+  function toggleChecklistMode() {
+    const btn = $('checklistToggleBtn');
+    const ta = $('taskNotes');
+    const editor = $('checklistEditor');
+
+    if (notesMode === 'text') {
+      // przejście na checklistę
+      const txt = ta.value || '';
+      notesMode = 'checklist';
+      btn.classList.add('active');
+      ta.style.display = 'none';
+      parseNotesToChecklist(txt);
+      renderChecklistEditor();
+      editor.classList.add('active');
+    } else {
+      // wyjście do tekstu
+      const md = checklistToMarkdown();
+      notesMode = 'text';
+      btn.classList.remove('active');
+      editor.classList.remove('active');
+      editor.innerHTML = '';
+      ta.style.display = 'block';
+      ta.value = md;
+      checklistItems = [];
+    }
+  }
+
+  function parseNotesToChecklist(txt) {
+    checklistItems = [];
+    const lines = (txt || '').split('\n');
+    lines.forEach(line => {
+      const trimmed = line.trim();
+      if (!trimmed) return;
+      const m = /^-\s*\[( |x|X)\]\s+(.+)$/.exec(trimmed);
+      if (m) {
+        checklistItems.push({
+          text: m[2],
+          done: m[1].toLowerCase() === 'x'
+        });
+      } else {
+        checklistItems.push({ text: trimmed, done: false });
+      }
+    });
+    if (!checklistItems.length) {
+      checklistItems.push({ text: '', done: false });
+    }
+  }
+
+  function renderChecklistEditor() {
+    const editor = $('checklistEditor');
+    editor.innerHTML = '';
+    checklistItems.forEach((item, i) => {
+      const row = document.createElement('div');
+      row.className = 'checklist-row';
+
+      const toggle = document.createElement('div');
+      toggle.className = 'checklist-row-toggle' + (item.done ? ' checked' : '');
+      toggle.onclick = () => {
+        item.done = !item.done;
+        renderChecklistEditor();
+      };
+      const icon = document.createElement('span');
+      icon.className = 'material-symbols-rounded';
+      icon.textContent = 'check';
+      toggle.appendChild(icon);
+
+      const input = document.createElement('input');
+      input.className = 'checklist-row-input';
+      input.value = item.text;
+      input.placeholder = 'Podzadanie';
+      input.oninput = (e) => {
+        checklistItems[i].text = e.target.value;
+      };
+
+      const del = document.createElement('button');
+      del.className = 'checklist-row-remove';
+      del.innerHTML = 'close';
+      del.onclick = () => {
+        checklistItems.splice(i,1);
+        if (!checklistItems.length) {
+          checklistItems.push({ text:'', done:false });
+        }
+        renderChecklistEditor();
+      };
+
+      row.appendChild(toggle);
+      row.appendChild(input);
+      row.appendChild(del);
+      editor.appendChild(row);
+    });
+
+    const addBtn = document.createElement('button');
+    addBtn.className = 'checklist-add-btn';
+    addBtn.innerHTML = '<span class="material-symbols-rounded">add</span>Dodaj podzadanie';
+    addBtn.onclick = () => {
+      checklistItems.push({ text:'', done:false });
+      renderChecklistEditor();
+    };
+    editor.appendChild(addBtn);
+  }
+
+  function checklistToMarkdown() {
+    return checklistItems
+      .filter(i => i.text && i.text.trim())
+      .map(i => `- [${i.done ? 'x' : ' '}] ${i.text.trim()}`)
+      .join('\n');
+  }
+
+  function saveTask(e) {
+    e.preventDefault();
+    const title = $('taskTitle').value.trim();
+    if (!title) return;
+
+    let notes = '';
+    if (notesMode === 'checklist') {
+      notes = checklistToMarkdown();
+    } else {
+      notes = $('taskNotes').value.trim();
+    }
+
+    let date = selectedDateOption;
+    if (date === 'CUSTOM') {
+      if (!selectedCustomDate) {
+        toast('Wybierz datę z kalendarza');
+        return;
+      }
+      date = selectedCustomDate;
+    }
+
+    if (editingTaskId) {
+      const t = allTasks.find(x => x.id === editingTaskId);
+      if (t && t.type === 'OSOBISTE') {
+        t.title = title;
+        t.notes = notes;
+        t.date = date;
+        toast('Zapisano zmiany');
+      }
+    } else {
+      const n = {
+        id: uuid(),
+        type: 'OSOBISTE',
+        taskType: 'OSOBISTE',
+        createdBy: currentUser,
+        forWho: currentUser,
+        title,
+        notes,
+        date,
+        status: 'DO_ZROBIENIA',
+        completedBy: '',
+        completedAt: ''
+      };
+      allTasks.push(n);
+      callAPI('addTask', { handlowiec: currentUser, task: JSON.stringify(n) });
+      toast('Dodano zadanie');
+    }
+
+    saveTasks();
+    updateCounts();
+    const active = document.querySelector('.screen.active');
+    if (active && active.id !== 'homeScreen') {
+      renderView(active.id.replace('Screen',''));
+    }
+    closeAddSheet();
+  }
+
+  /* KALENDARZ */
+
+  function openCalendarPopup() {
+    $('calendarPopup').classList.add('active');
+    calendarDate = selectedCustomDate ? new Date(selectedCustomDate) : new Date();
+    renderCalendar();
+  }
+
+  function calendarOverlayClick(e) {
+    if (e.target.id === 'calendarPopup') {
+      $('calendarPopup').classList.remove('active');
+    }
+  }
+
+  function renderCalendar() {
+    const year = calendarDate.getFullYear();
+    const month = calendarDate.getMonth();
+    $('calendarMonth').textContent =
+      calendarDate.toLocaleDateString('pl-PL', { month:'long', year:'numeric' });
+
+    const grid = $('calendarGrid');
+    const first = new Date(year, month, 1);
+    let start = first.getDay();
+    if (start === 0) start = 7;
+    const daysInMonth = new Date(year, month+1, 0).getDate();
+    const todayStr = todayISO();
+
+    let html = '';
+    const headers = ['Pn','Wt','Śr','Cz','Pt','So','Nd'];
+    headers.forEach(h => html += '<div class="calendar-day-header">' + h + '</div>');
+
+    for (let i=1;i<start;i++) {
+      html += '<div class="calendar-day disabled"></div>';
+    }
+
+    for (let d=1; d<=daysInMonth; d++) {
+      const ds = formatLocalISO(new Date(year, month, d));
+      let cls = 'calendar-day';
+      if (ds === todayStr) cls += ' today';
+      if (selectedCustomDate === ds) cls += ' selected';
+      html += '<div class="' + cls + '" onclick="selectCalendarDate(\'' + ds + '\')">' + d + '</div>';
+    }
+
+    grid.innerHTML = html;
+  }
+
+  function changeMonth(delta) {
+    calendarDate.setMonth(calendarDate.getMonth() + delta);
+    renderCalendar();
+  }
+
+  function selectCalendarDate(ds) {
+    selectedCustomDate = ds;
+    setDateOption('CUSTOM', ds);
+    $('calendarPopup').classList.remove('active');
+  }
+
+  /* INIT */
+
+  document.addEventListener('DOMContentLoaded', () => {
+    const now = new Date();
+    const weekday = now.toLocaleDateString('pl-PL', { weekday:'long' });
+    $('homeDay').textContent = weekday.charAt(0).toUpperCase() + weekday.slice(1);
+    $('homeDate').textContent = now.toLocaleDateString('pl-PL', {
+      day:'numeric', month:'long', year:'numeric'
+    });
+    $('today-date').textContent = formatFullDate(now);
+    $('today-label').textContent = formatFullDate(now);
+
+    const endOfWeek = (() => {
+      const d = new Date();
+      const day = d.getDay() || 7;
+      d.setDate(d.getDate() + (7 - day));
+      return d;
+    })();
+    $('thisweek-subtitle').textContent =
+      'Do ' + endOfWeek.getDate() + ' ' +
+      endOfWeek.toLocaleDateString('pl-PL',{month:'long'});
+
+    loadTasks();
+    updateCounts();
+    syncTasks();
+  });
+
+  // UPDATE v3.3b: rozwijanie / zwijanie checklisty i notatek (tylko po kliknięciu strzałki)
+  function toggleSubtasks(e, id) {
+    if (e) e.stopPropagation();
+    var item = document.querySelector('.task-item[data-id="' + id + '"]');
+    if (!item) return;
+    var details = item.querySelector('.task-details');
+    if (!details) return;
+    var arrow = item.querySelector('.expand-arrow');
+
+    var isOpen = details.style.maxHeight && details.style.maxHeight !== '0px';
+
+    if (isOpen) {
+      details.style.maxHeight = '0px';
+      details.style.opacity = '0';
+      if (arrow) arrow.textContent = 'expand_more';
+    } else {
+      // ustaw max-height dynamicznie do wysokości zawartości
+      details.style.maxHeight = details.scrollHeight + 'px';
+      details.style.opacity = '1';
+      if (arrow) arrow.textContent = 'expand_less';
+    }
+  }
+
+</script>
+</body>
+</html>
